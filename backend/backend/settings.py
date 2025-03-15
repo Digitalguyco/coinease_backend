@@ -68,7 +68,7 @@ CORS_ALLOWED_ORIGINS = [
     "https://coinease.live",  # Frontend URL
     "https://www.coinease.live",  # Frontend URL
     "http://localhost:3000",  # Frontend URL
-    "http://95.179.251.235:3000/",  # Frontend URL
+    "http://95.179.251.235:3000",  # Frontend URL
 ]
 
 EMAIL_HOST = 'mail.privateemail.com'
