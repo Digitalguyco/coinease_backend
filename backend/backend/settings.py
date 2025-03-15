@@ -25,7 +25,12 @@ SECRET_KEY = 'django-insecure-vo^l5&4gc5@9(u=xet3#48lr@&9$uw(ztt-@1yd8e(otgk&xsb
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    "coinease.live",
+    "www.coinease.live",
+    "localhost",
+    "95.179.251.235",
+]
 
 AUTH_USER_MODEL = 'accounts.User'
 
