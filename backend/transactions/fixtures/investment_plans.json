@@ -1,0 +1,80 @@
+[
+  {
+    "model": "transactions.investmentplan",
+    "pk": 1,
+    "fields": {
+      "tier": "starter",
+      "level": "silver",
+      "daily_roi": "2.80",
+      "min_deposit": "100.00",
+      "max_deposit": "1000.00",
+      "duration": 7,
+      "is_active": true
+    }
+  },
+  {
+    "model": "transactions.investmentplan",
+    "pk": 2,
+    "fields": {
+      "tier": "starter",
+      "level": "gold",
+      "daily_roi": "5.70",
+      "min_deposit": "1500.00",
+      "max_deposit": "10000.00",
+      "duration": 7,
+      "is_active": true
+    }
+  },
+  {
+    "model": "transactions.investmentplan",
+    "pk": 3,
+    "fields": {
+      "tier": "starter",
+      "level": "platinum",
+      "daily_roi": "8.50",
+      "min_deposit": "10000.00",
+      "max_deposit": "50000.00",
+      "duration": 7,
+      "is_active": true
+    }
+  },
+  {
+    "model": "transactions.investmentplan",
+    "pk": 4,
+    "fields": {
+      "tier": "pro",
+      "level": "silver",
+      "daily_roi": "3.20",
+      "min_deposit": "60000.00",
+      "max_deposit": "100000.00",
+      "duration": 14,
+      "is_active": true
+    }
+  },
+  {
+    "model": "transactions.investmentplan",
+    "pk": 5,
+    "fields": {
+      "tier": "pro",
+      "level": "gold",
+      "daily_roi": "6.20",
+      "min_deposit": "80000.00",
+      "max_deposit": "250000.00",
+      "duration": 14,
+      "is_active": true
+    }
+  },
+  {
+    "model": "transactions.investmentplan",
+    "pk": 6,
+    "fields": {
+      "tier": "pro",
+      "level": "platinum",
+      "daily_roi": "9.20",
+      "min_deposit": "100000.00",
+      "max_deposit": "500000.00",
+      "duration": 14,
+      "is_active": true
+    }
+  }
+] 
