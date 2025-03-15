@@ -1,8 +1,8 @@
 import uuid
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-from channels.layers import get_channel_layer
-from asgiref.sync import async_to_sync
+# from channels.layers import get_channel_layer
+# from asgiref.sync import async_to_sync
 import json
 
 def generate_referral_code():
@@ -40,15 +40,15 @@ class User(AbstractUser):
         super().save(*args, **kwargs)
         
         # If balance changed, send update via WebSocket
-        if balance_changed:
-            channel_layer = get_channel_layer()
-            async_to_sync(channel_layer.group_send)(
-                f'balance_{self.pk}',
-                {
-                    'type': 'balance_message',
-                    'message': {
-                        'balance': str(self.balance),
-                        'user_id': self.pk
-                    }
-                }
-            )
+        # if balance_changed:
+        #     channel_layer = get_channel_layer()
+        #     async_to_sync(channel_layer.group_send)(
+        #         f'balance_{self.pk}',
+        #         {
+        #             'type': 'balance_message',
+        #             'message': {
+        #                 'balance': str(self.balance),
+        #                 'user_id': self.pk
+        #             }
+        #         }
+        #     )
