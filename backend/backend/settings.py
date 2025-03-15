@@ -60,7 +60,10 @@ MIDDLEWARE = [
 ]
 
 CORS_ALLOWED_ORIGINS = [
+    "https://coinease.live",  # Frontend URL
+    "https://www.coinease.live",  # Frontend URL
     "http://localhost:3000",  # Frontend URL
+    "http://95.179.251.235:3000/",  # Frontend URL
 ]
 
 EMAIL_HOST = 'mail.privateemail.com'
@@ -69,7 +72,7 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'communications@coinease.live'
 EMAIL_HOST_PASSWORD = 'Calebrandthemall9#'
 ADMIN_EMAIL = 'youngkhito@gmail.com'
-SITE_URL = 'http://localhost:9000'
+SITE_URL = 'https://coinease.live'
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
