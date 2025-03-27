@@ -76,8 +76,8 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'communications@coinease.live'
 EMAIL_HOST_PASSWORD = 'Calebrandthemall9#'
-# ADMIN_EMAIL = 'coinease7@gmail.com'
-ADMIN_EMAIL = 'youngkhito@gmail.com'
+ADMIN_EMAIL = 'coinease7@gmail.com'
+# ADMIN_EMAIL = 'youngkhito@gmail.com'
 DEFAULT_FROM_EMAIL = 'communications@coinease.live'
 SITE_URL = 'https://coinease.live'
 
