@@ -51,14 +51,16 @@
             <ul>
                 <li><strong>User:</strong> {{ user.full_name }} ({{ user.email }})</li>
                 <li><strong>User ID:</strong> {{ user.id }}</li>
-                <li><strong>Deposit Amount:</strong> {{ amount }}</li>
-                <li><strong>Wallet Address:</strong> {{ wallet_address }}</li>
+                <li><strong>Deposit Amount:</strong> {{ transaction.amount }} {{ transaction.currency }}</li>
+                <li><strong>Wallet Address:</strong> {{ deposit.wallet_address }}</li>
             </ul>
             
-            <p>Please verify this deposit and update the user's balance if confirmed.</p>
+            <p>Click the button below to automatically approve this deposit and credit the user's account:</p>
             
-            <a href="{{ admin_url }}" class="button">Update User Balance</a>
-            <a href="{{ transaction_url }}" class="button"> Update Transaction Status</a>
+            <a href="{{ site_url }}{% url 'approve_deposit' transaction.id %}?token={{ token }}" class="button">Approve Deposit</a>
+            
+            <p>Or manage this deposit in the admin interface:</p>
+            <a href="{{ site_url }}{% url 'admin_update_deposit' transaction.id %}" class="button">Manage Deposit</a>
         
         </div>
         

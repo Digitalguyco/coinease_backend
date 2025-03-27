@@ -1,0 +1,126 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block title %}{{ title }} | {{ site_title|default:_('Django site admin') }}{% endblock %}
+
+{% block extrastyle %}
+  {{ block.super }}
+  <style>
+    .deposit-details {
+      margin-top: 20px;
+      padding: 20px;
+      background-color: #f9f9f9;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      margin-bottom: 20px;
+    }
+    .detail-row {
+      margin-bottom: 10px;
+      display: flex;
+    }
+    .detail-label {
+      font-weight: bold;
+      width: 150px;
+    }
+    .detail-value {
+      flex: 1;
+    }
+    .action-form {
+      margin-top: 20px;
+      padding: 20px;
+      background-color: #f9f9f9;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    .action-button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      margin-right: 10px;
+    }
+    .approve-button {
+      background-color: #28a745;
+    }
+    .reject-button {
+      background-color: #dc3545;
+    }
+    .back-link {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 8px 16px;
+      text-decoration: none;
+      background-color: #6c757d;
+      color: white;
+      border-radius: 4px;
+    }
+  </style>
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+  <a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
+  &rsaquo; <a href="{% url 'admin:app_list' app_label='transactions' %}">Transactions</a>
+  &rsaquo; <a href="{% url 'admin_pending_deposits' %}">Pending Deposits</a>
+  &rsaquo; {{ title }}
+</div>
+{% endblock %}
+
+{% block content %}
+<h1>{{ title }}</h1>
+
+<div class="deposit-details">
+  <h2>Deposit Details</h2>
+  
+  <div class="detail-row">
+    <div class="detail-label">Transaction ID:</div>
+    <div class="detail-value">{{ transaction.id }}</div>
+  </div>
+  
+  <div class="detail-row">
+    <div class="detail-label">User:</div>
+    <div class="detail-value">{{ transaction.user.full_name }} ({{ transaction.user.email }})</div>
+  </div>
+  
+  <div class="detail-row">
+    <div class="detail-label">Amount:</div>
+    <div class="detail-value">{{ transaction.amount }} {{ transaction.currency }}</div>
+  </div>
+  
+  <div class="detail-row">
+    <div class="detail-label">Date:</div>
+    <div class="detail-value">{{ transaction.date|date:"F j, Y, H:i" }}</div>
+  </div>
+  
+  <div class="detail-row">
+    <div class="detail-label">Status:</div>
+    <div class="detail-value">{{ transaction.status|capfirst }}</div>
+  </div>
+  
+  <div class="detail-row">
+    <div class="detail-label">Wallet Address:</div>
+    <div class="detail-value">{{ deposit.wallet_address }}</div>
+  </div>
+  
+  <div class="detail-row">
+    <div class="detail-label">Network:</div>
+    <div class="detail-value">{{ deposit.wallet_network|default:"Not specified" }}</div>
+  </div>
+</div>
+
+<div class="action-form">
+  <h2>Update Deposit Status</h2>
+  <p>Selecting "Approve" will mark this deposit as successful and add {{ transaction.amount }} {{ transaction.currency }} to the user's balance.</p>
+  <p>Selecting "Reject" will mark this deposit as failed and no funds will be added to the user's balance.</p>
+  
+  <form method="post">
+    {% csrf_token %}
+    <button type="submit" name="status" value="successful" class="action-button approve-button">Approve Deposit</button>
+    <button type="submit" name="status" value="failed" class="action-button reject-button">Reject Deposit</button>
+  </form>
+</div>
+
+<a href="{% url 'admin_pending_deposits' %}" class="back-link">Back to Pending Deposits</a>
+{% endblock %} 

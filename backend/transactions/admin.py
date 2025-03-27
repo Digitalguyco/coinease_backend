@@ -1,4 +1,6 @@
 from django.contrib import admin
+from django.urls import reverse
+from django.utils.html import format_html
 from django.utils import timezone
 from .models import Transaction, Deposit, Withdrawal, InvestmentPlan, Investment
 
@@ -28,10 +30,19 @@ class TransactionAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         return qs.select_related('user')
+    
+    def pending_deposits_link(self, request):
+        url = reverse('admin_pending_deposits')
+        return format_html('<a href="{}">View Pending Deposits</a>', url)
+    
+    def changelist_view(self, request, extra_context=None):
+        extra_context = extra_context or {}
+        extra_context['pending_deposits_link'] = self.pending_deposits_link(request)
+        return super().changelist_view(request, extra_context=extra_context)
 
 @admin.register(Deposit)
 class DepositAdmin(admin.ModelAdmin):
-    list_display = ('transaction_id', 'user', 'amount', 'currency', 'status', 'date')
+    list_display = ('transaction_id', 'user', 'amount', 'currency', 'status', 'wallet_address', 'date')
     list_filter = ('transaction__status', 'transaction__date')
     search_fields = ('transaction__user__email', 'transaction__user__full_name', 'wallet_address')
     readonly_fields = ('transaction',)

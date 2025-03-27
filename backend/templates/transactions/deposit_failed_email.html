@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .header {
+            background-color: #e74c3c;
+            color: white;
+            padding: 10px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .details {
+            margin-bottom: 20px;
+        }
+        .footer {
+            margin-top: 30px;
+            font-size: 0.8em;
+            text-align: center;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>Deposit Unsuccessful</h2>
+        </div>
+        
+        <div class="details">
+            <p>Hello {{ user.full_name }},</p>
+            
+            <p>We regret to inform you that your recent deposit could not be processed successfully.</p>
+            
+            <p><strong>Details:</strong></p>
+            <ul>
+                <li>Amount: {{ transaction.amount }} {{ transaction.currency }}</li>
+                <li>Date: {{ transaction.date|date:"F j, Y" }}</li>
+                <li>Transaction ID: {{ transaction.id }}</li>
+            </ul>
+            
+            <p>This could be due to one of the following reasons:</p>
+            <ul>
+                <li>The transaction was not confirmed on the blockchain</li>
+                <li>The amount sent did not match the requested amount</li>
+                <li>The wallet address used was incorrect</li>
+            </ul>
+            
+            <p>If you have any questions or need assistance, please contact our support team.</p>
+            
+            <p>You are welcome to try again with a new deposit request from your dashboard.</p>
+        </div>
+        
+        <div class="footer">
+            <p>© CoinEase. All rights reserved.</p>
+            <p>This is an automated message. Please do not reply to this email.</p>
+        </div>
+    </div>
+</body>
+</html> 

@@ -1,0 +1,105 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block title %}{{ title }} | {{ site_title|default:_('Django site admin') }}{% endblock %}
+
+{% block extrastyle %}
+  {{ block.super }}
+  <style>
+    .deposit-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    .deposit-table th, .deposit-table td {
+      padding: 10px;
+      border: 1px solid #ccc;
+      text-align: left;
+    }
+    .deposit-table th {
+      background-color: #f9f9f9;
+    }
+    .deposit-table tr:nth-child(even) {
+      background-color: #f5f5f5;
+    }
+    .action-button {
+      display: inline-block;
+      padding: 8px 16px;
+      text-decoration: none;
+      background-color: #417690;
+      color: white;
+      border-radius: 4px;
+      margin-right: 5px;
+    }
+    .action-button.approve {
+      background-color: #28a745;
+    }
+    .action-button.reject {
+      background-color: #dc3545;
+    }
+    .no-deposits {
+      margin-top: 20px;
+      padding: 20px;
+      background-color: #f9f9f9;
+      border: 1px solid #ddd;
+      text-align: center;
+    }
+  </style>
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+  <a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
+  &rsaquo; <a href="{% url 'admin:app_list' app_label='transactions' %}">Transactions</a>
+  &rsaquo; {{ title }}
+</div>
+{% endblock %}
+
+{% block content %}
+<h1>{{ title }}</h1>
+
+{% if messages %}
+  <ul class="messagelist">
+    {% for message in messages %}
+      <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+    {% endfor %}
+  </ul>
+{% endif %}
+
+{% if deposits %}
+  <table class="deposit-table">
+    <thead>
+      <tr>
+        <th>Transaction ID</th>
+        <th>User</th>
+        <th>Amount</th>
+        <th>Currency</th>
+        <th>Date</th>
+        <th>Wallet Address</th>
+        <th>Network</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for deposit in deposits %}
+        <tr>
+          <td>{{ deposit.id }}</td>
+          <td>{{ deposit.user.full_name }} ({{ deposit.user.email }})</td>
+          <td>{{ deposit.amount }}</td>
+          <td>{{ deposit.currency }}</td>
+          <td>{{ deposit.date|date:"F j, Y, H:i" }}</td>
+          <td>{{ deposit.wallet_address }}</td>
+          <td>{{ deposit.wallet_network }}</td>
+          <td>
+            <a href="{% url 'admin_update_deposit' deposit.id %}" class="action-button approve">Manage</a>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% else %}
+  <div class="no-deposits">
+    <p>There are no pending deposits at this time.</p>
+  </div>
+{% endif %}
+{% endblock %} 

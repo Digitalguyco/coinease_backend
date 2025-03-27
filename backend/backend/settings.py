@@ -76,7 +76,8 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'communications@coinease.live'
 EMAIL_HOST_PASSWORD = 'Calebrandthemall9#'
-ADMIN_EMAIL = 'coinease7@gmail.com'
+# ADMIN_EMAIL = 'coinease7@gmail.com'
+ADMIN_EMAIL = 'youngkhito@gmail.com'
 DEFAULT_FROM_EMAIL = 'communications@coinease.live'
 SITE_URL = 'https://coinease.live'
 
@@ -172,3 +173,7 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Admin approval token for one-click deposit approval
+# You should change this to a secure random string in production
+ADMIN_APPROVAL_TOKEN = "YOUR_SECURE_RANDOM_TOKEN"
