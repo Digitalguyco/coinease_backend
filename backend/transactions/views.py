@@ -282,6 +282,9 @@ def get_user_investments(request):
     """Get all investments for the current user"""
     user = request.user
     investments = Investment.objects.filter(user=user)
+    # Process payout to update status if needed
+    for investment in investments:
+        investment.process_payout()
     
     # Filter by status if provided
     status_filter = request.query_params.get('status')
