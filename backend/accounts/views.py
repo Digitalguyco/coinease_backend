@@ -9,7 +9,6 @@ from django.conf import settings
 from rest_framework.permissions import IsAuthenticated
 from django.db import transaction
 from django.template.loader import render_to_string
-from django.utils.html import strip_tagsß
 from django.contrib.admin.views.decorators import staff_member_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
