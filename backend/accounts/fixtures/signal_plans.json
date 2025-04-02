@@ -1,0 +1,62 @@
+[
+  {
+    "model": "accounts.signalplan",
+    "pk": 1,
+    "fields": {
+      "name": "Starter Signal",
+      "description": "Basic signal strength for new investors to test the waters",
+      "price": "50.00",
+      "strength_level": 2,
+      "trades_count": 5,
+      "is_active": true
+    }
+  },
+  {
+    "model": "accounts.signalplan",
+    "pk": 2,
+    "fields": {
+      "name": "Pro Signal",
+      "description": "Medium strength signal for regular traders with higher success rate",
+      "price": "150.00",
+      "strength_level": 3,
+      "trades_count": 15,
+      "is_active": true
+    }
+  },
+  {
+    "model": "accounts.signalplan",
+    "pk": 3,
+    "fields": {
+      "name": "Elite Signal",
+      "description": "Maximum signal strength for optimal trading performance and highest ROI",
+      "price": "300.00",
+      "strength_level": 4,
+      "trades_count": 30,
+      "is_active": true
+    }
+  },
+  {
+    "model": "accounts.signalplan",
+    "pk": 4,
+    "fields": {
+      "name": "Elite Signal Plus",
+      "description": "Premium high-strength signal for professional traders with extended usage",
+      "price": "500.00",
+      "strength_level": 4,
+      "trades_count": 60,
+      "is_active": true
+    }
+  },
+  {
+    "model": "accounts.signalplan",
+    "pk": 5,
+    "fields": {
+      "name": "Weekly Boost",
+      "description": "Short-term medium signal for quick trading sessions",
+      "price": "75.00",
+      "strength_level": 3,
+      "trades_count": 7,
+      "is_active": true
+    }
+  }
+] 
