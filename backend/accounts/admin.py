@@ -17,6 +17,9 @@ class CustomUserAdmin(UserAdmin):
     search_fields = ('email', 'username', 'full_name')
     ordering = ('email',)
 
+# First register the default User admin
+admin.site.register(User, CustomUserAdmin)
+
 @admin.register(SignalPlan)
 class SignalPlanAdmin(admin.ModelAdmin):
     list_display = ('name', 'strength_level', 'price', 'trades_count', 'is_active')
@@ -29,6 +32,3 @@ class SignalPurchaseHistoryAdmin(admin.ModelAdmin):
     list_filter = ('plan', 'date')
     search_fields = ('user__email', 'user__full_name')
     raw_id_fields = ('user', 'plan', 'transaction')
-
-admin.site.unregister(User)
-admin.site.register(User, CustomUserAdmin)
