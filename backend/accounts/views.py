@@ -2,10 +2,16 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
-from .models import User
+from .models import User, SignalPlan, Transaction, SignalPurchaseHistory
 from django.core.mail import send_mail
 from django.conf import settings
 from rest_framework.permissions import IsAuthenticated
+from django.db import transaction
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
+from django.contrib.admin.views.decorators import staff_member_required
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
 
 
 
@@ -128,3 +134,164 @@ def update_user_profile(request):
         'message': 'Profile updated successfully',
         'user': user_data
     }, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_signal_strength(request):
+    """Get the current user's signal strength and status"""
+    user = request.user
+    
+    # Create response with signal information
+    response = {
+        'signal_strength': user.signal_strength,
+        'signal_trades_remaining': user.signal_trades_remaining,
+        'last_updated': user.signal_last_updated,
+        'can_process_trades': user.signal_strength >= 3 and user.signal_trades_remaining > 0
+    }
+    
+    return Response(response)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_signal_plans(request):
+    """Get all available signal plans for purchase"""
+    plans = SignalPlan.objects.filter(is_active=True)
+    
+    # Convert to list of dictionaries for the response
+    plans_data = []
+    for plan in plans:
+        plans_data.append({
+            'id': plan.id,
+            'name': plan.name,
+            'description': plan.description,
+            'price': plan.price,
+            'strength_level': plan.strength_level,
+            'trades_count': plan.trades_count
+        })
+    
+    return Response(plans_data)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def purchase_signal_plan(request):
+    """Purchase a signal plan to increase signal strength"""
+    user = request.user
+    data = request.data
+    
+    # Validate plan ID
+    if 'plan_id' not in data:
+        return Response(
+            {'error': 'Plan ID is required'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    try:
+        plan = SignalPlan.objects.get(id=data['plan_id'], is_active=True)
+    except SignalPlan.DoesNotExist:
+        return Response(
+            {'error': 'Signal plan not found or inactive'},
+            status=status.HTTP_404_NOT_FOUND
+        )
+    
+    # Check if user has sufficient balance
+    if user.balance < plan.price:
+        return Response(
+            {'error': 'Insufficient balance for this signal plan'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    # Process purchase within a transaction
+    with transaction.atomic():
+        # Deduct from user balance
+        user.balance -= plan.price
+        
+        # Update signal strength and trades remaining
+        user.signal_strength = plan.strength_level
+        user.signal_trades_remaining += plan.trades_count
+        user.save()
+        
+        # Create transaction record
+        tx = Transaction.objects.create(
+            user=user,
+            type='signal_purchase',
+            status='successful',
+            amount=plan.price,
+            currency='USD',  # Assuming USD as default, modify as needed
+            description=f"Purchase of {plan.name} signal plan"
+        )
+        
+        # Record signal purchase
+        SignalPurchaseHistory.objects.create(
+            user=user,
+            plan=plan,
+            amount=plan.price,
+            transaction=tx
+        )
+    
+    # Send confirmation email
+    try:
+        subject = "Signal Strength Upgraded"
+        html_message = render_to_string('accounts/signal_upgraded_email.html', {
+            'user': user,
+            'plan': plan,
+            'site_url': settings.SITE_URL
+        })
+        plain_message = strip_tags(html_message)
+        
+        send_mail(
+            subject,
+            plain_message,
+            settings.DEFAULT_FROM_EMAIL,
+            [user.email],
+            html_message=html_message,
+            fail_silently=False,
+        )
+    except Exception as e:
+        # Log the error but don't fail the operation
+        print(f"Failed to send signal upgrade email: {str(e)}")
+    
+    # Return updated signal information
+    return Response({
+        'status': 'success',
+        'message': f'Successfully purchased {plan.name} signal plan',
+        'signal_strength': user.signal_strength,
+        'signal_trades_remaining': user.signal_trades_remaining,
+        'transaction_id': tx.id
+    })
+
+@staff_member_required
+def admin_manage_signal_strength(request):
+    """Admin view to manage user signal strength"""
+    # Get all users, ordered by signal strength (low to high)
+    users = User.objects.all().order_by('signal_strength', 'signal_trades_remaining')
+    
+    context = {
+        'users': users,
+        'title': 'Manage Signal Strength'
+    }
+    
+    return render(request, 'admin/accounts/manage_signal_strength.html', context)
+
+@staff_member_required
+def admin_update_user_signal(request, user_id):
+    """Admin view to update a specific user's signal strength"""
+    user = get_object_or_404(User, id=user_id)
+    
+    if request.method == 'POST':
+        # Update user's signal strength and trades
+        new_strength = int(request.POST.get('signal_strength', user.signal_strength))
+        new_trades = int(request.POST.get('signal_trades_remaining', user.signal_trades_remaining))
+        
+        user.signal_strength = new_strength
+        user.signal_trades_remaining = new_trades
+        user.save()
+        
+        messages.success(request, f"Signal strength for {user.email} updated successfully")
+        return redirect('admin_manage_signal_strength')
+    
+    context = {
+        'user': user,
+        'title': f'Update Signal for {user.email}'
+    }
+    
+    return render(request, 'admin/accounts/update_user_signal.html', context)

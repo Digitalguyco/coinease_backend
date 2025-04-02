@@ -21,6 +21,24 @@ class User(AbstractUser):
     phone_number = models.CharField(max_length=20, blank=True, null=True)
     occupation = models.CharField(max_length=255, blank=True, null=True)
     annual_income = models.DecimalField(max_digits=15, decimal_places=2, blank=True, null=True)
+    country = models.CharField(max_length=100, blank=True, null=True)
+    id_number = models.CharField(max_length=50, blank=True, null=True)
+    date_of_birth = models.DateField(blank=True, null=True)
+    
+    is_active = models.BooleanField(default=True)
+    is_staff = models.BooleanField(default=False)
+    
+    referred_by = models.ForeignKey('self', on_delete=models.SET_NULL, blank=True, null=True, related_name='referrals')
+    
+    # Signal strength related fields
+    signal_strength = models.IntegerField(default=1, choices=[
+        (1, 'Very Low'),
+        (2, 'Low'),
+        (3, 'Medium'),
+        (4, 'High'),
+    ], help_text="Current signal strength (1-4)")
+    signal_trades_remaining = models.IntegerField(default=0, help_text="Number of trades remaining before signal depletes")
+    signal_last_updated = models.DateTimeField(auto_now=True)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username', 'full_name']
@@ -52,3 +70,31 @@ class User(AbstractUser):
         #             }
         #         }
         #     )
+
+# Signal Strength Plans
+class SignalPlan(models.Model):
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True, null=True)
+    price = models.DecimalField(max_digits=18, decimal_places=8)
+    strength_level = models.IntegerField(choices=[
+        (1, 'Very Low'),
+        (2, 'Low'),
+        (3, 'Medium'),
+        (4, 'High'),
+    ])
+    trades_count = models.IntegerField(help_text="Number of trades this plan allows")
+    is_active = models.BooleanField(default=True)
+    
+    def __str__(self):
+        return f"{self.name} - Level {self.strength_level} ({self.trades_count} trades)"
+
+# Signal Purchase History
+class SignalPurchaseHistory(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='signal_purchases')
+    plan = models.ForeignKey(SignalPlan, on_delete=models.SET_NULL, null=True)
+    amount = models.DecimalField(max_digits=18, decimal_places=8)
+    transaction = models.ForeignKey('transactions.Transaction', on_delete=models.SET_NULL, null=True, blank=True)
+    date = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return f"{self.user.email} - {self.plan.name} on {self.date.strftime('%Y-%m-%d')}"

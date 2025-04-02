@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .header {
+            background-color: #27ae60;
+            color: white;
+            padding: 10px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .details {
+            margin-bottom: 20px;
+        }
+        .footer {
+            margin-top: 30px;
+            font-size: 0.8em;
+            text-align: center;
+            color: #777;
+        }
+        .signal-bars {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        .bar {
+            width: 20px;
+            margin: 0 5px;
+            background-color: #ccc;
+            border-radius: 3px;
+        }
+        .bar-1 { height: 10px; }
+        .bar-2 { height: 15px; }
+        .bar-3 { height: 20px; }
+        .bar-4 { height: 25px; }
+        .active { background-color: #27ae60; }
+        .details-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        .details-table th, .details-table td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        .details-table th {
+            background-color: #f2f2f2;
+        }
+        .button {
+            display: inline-block;
+            background-color: #27ae60;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 4px;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>Signal Strength Upgraded!</h2>
+        </div>
+        
+        <div class="details">
+            <p>Hello {{ user.full_name }},</p>
+            
+            <p>Great news! Your trading signal strength has been successfully upgraded.</p>
+            
+            <div class="signal-bars">
+                {% if plan.strength_level >= 1 %}<div class="bar bar-1 active"></div>{% else %}<div class="bar bar-1"></div>{% endif %}
+                {% if plan.strength_level >= 2 %}<div class="bar bar-2 active"></div>{% else %}<div class="bar bar-2"></div>{% endif %}
+                {% if plan.strength_level >= 3 %}<div class="bar bar-3 active"></div>{% else %}<div class="bar bar-3"></div>{% endif %}
+                {% if plan.strength_level >= 4 %}<div class="bar bar-4 active"></div>{% else %}<div class="bar bar-4"></div>{% endif %}
+            </div>
+            
+            <table class="details-table">
+                <tr>
+                    <th>Plan Name</th>
+                    <td>{{ plan.name }}</td>
+                </tr>
+                <tr>
+                    <th>Signal Strength</th>
+                    <td>
+                        {% if plan.strength_level == 1 %}Very Low
+                        {% elif plan.strength_level == 2 %}Low
+                        {% elif plan.strength_level == 3 %}Medium
+                        {% elif plan.strength_level == 4 %}High
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <th>Trades Added</th>
+                    <td>{{ plan.trades_count }}</td>
+                </tr>
+                <tr>
+                    <th>Total Remaining Trades</th>
+                    <td>{{ user.signal_trades_remaining }}</td>
+                </tr>
+            </table>
+            
+            <p>With your enhanced signal strength, your investments will now be processed with greater efficiency and accuracy, maximizing your returns.</p>
+            
+            <p>Visit your dashboard to check your investment performance:</p>
+            
+            <a href="{{ site_url }}/dashboard" class="button">Go to Dashboard</a>
+        </div>
+        
+        <div class="footer">
+            <p>© CoinEase. All rights reserved.</p>
+            <p>This is an automated message. Please do not reply to this email.</p>
+        </div>
+    </div>
+</body>
+</html> 

@@ -4,6 +4,10 @@ import uuid
 import math
 from django.utils import timezone
 from decimal import Decimal
+from django.db import transaction
+from django.template.loader import render_to_string
+from django.core.mail import send_mail
+from django.utils.html import strip_tags
 
 class Transaction(models.Model):
     TRANSACTION_TYPES = (
@@ -161,69 +165,76 @@ class Investment(models.Model):
         return daily_return.quantize(Decimal('0.01'))
     
     def process_payout(self):
-        """Process daily investment returns"""
-        if self.status == 'completed':
-            print(f"Investment {self.id} is completed")
+        """Process investment payout based on daily ROI and duration"""
+        # Skip processing if already completed or if status is not 'ongoing'
+        if self.status != 'ongoing':
             return False
         
+        # Get user's signal strength - skip payout if signal is weak
+        user = self.user
+        if user.signal_strength < 3:  # Signal must be Medium (3) or High (4) to process
+            # Investment remains ongoing but no payout occurs due to weak signal
+            return False
+        
+        # Check if there are trades remaining, if not, skip payout
+        if user.signal_trades_remaining <= 0:
+            # No trades left, can't process
+            return False
+            
         now = timezone.now()
         
-        # Handle the case where next_payout_date is None
-        if self.next_payout_date is None:
-            # Set next_payout_date to now + 1 minute for testing
-            self.next_payout_date = now + timezone.timedelta(minutes=1)
-            self.save()
-            return False
-        
-        # Skip if not yet time for payout
-        if now < self.next_payout_date:
-            print(f"Not yet time for payout for investment {self.id}")
-            return False
-        
-        # Calculate daily return
-        daily_return = self.calculate_daily_return()
-        
-        # Add return to user's balance and update investment records
-        self.user.balance += daily_return
-        self.user.save()
-        
-        self.total_returns += daily_return
-        self.last_payout_date = now
-        self.next_payout_date = now + timezone.timedelta(minutes=1)  # Every minute for testing
-        
-        # Create return transaction
-        Transaction.objects.create(
-            user=self.user,
-            type='investment_return',
-            status='successful',
-            amount=daily_return,
-            currency=self.currency,
-            description=f"Daily return from {self.plan} investment"
-        )
-        
-        # Check if halfway through investment period
-        progress = self.calculate_progress()
-        if progress >= 50 and self.status == 'ongoing':
-            self.status = 'halfway'
-        
-        # Check if investment is complete
-        if now >= self.end_date and self.status != 'completed':
-            # Change status to completed
-            self.status = 'completed'
+        # Check if investment period has ended
+        if now >= self.end_date:
+            # Calculate total return including principal
+            daily_roi_decimal = self.plan.daily_roi / Decimal('100.00')
+            total_days = self.plan.duration
+            total_return = self.amount + (self.amount * daily_roi_decimal * total_days)
             
-            # Return principal to user's balance
-            self.user.balance += self.amount
-            self.user.save()
-            
-            # Create completion transaction record
-            Transaction.objects.create(
-                user=self.user,
-                type='investment_completed',
-                status='successful',
-                amount=self.amount,
-                currency=self.currency,
-                description=f"Investment principal returned from {self.plan} investment"
-            )
+            # Return investment to user's balance
+            with transaction.atomic():
+                self.user.balance += total_return
+                self.user.save()
+                
+                # Create transaction record for completed investment
+                Transaction.objects.create(
+                    user=self.user,
+                    type='investment_completed',
+                    status='successful',
+                    amount=total_return,
+                    currency=self.currency,
+                    description=f"Investment completed: {self.plan.tier} {self.plan.level} Plan"
+                )
+                
+                # Update investment status
+                self.status = 'completed'
+                self.save()
+                
+                # Decrease user's signal trades remaining
+                user.signal_trades_remaining -= 1
+                user.save()
+                
+                # If this was the last trade and signal is depleted, send notification email
+                if user.signal_trades_remaining <= 0:
+                    try:
+                        subject = "Signal Strength Depleted"
+                        html_message = render_to_string('accounts/signal_depleted_email.html', {
+                            'user': user,
+                        })
+                        plain_message = strip_tags(html_message)
+                        
+                        send_mail(
+                            subject,
+                            plain_message,
+                            settings.DEFAULT_FROM_EMAIL,
+                            [user.email],
+                            html_message=html_message,
+                            fail_silently=False,
+                        )
+                    except Exception as e:
+                        # Log the error but don't fail the operation
+                        print(f"Failed to send signal depletion email: {str(e)}")
+                
+            return True
         
-        self.save()
-        return True
+        # Investment still ongoing, do nothing
+        return False

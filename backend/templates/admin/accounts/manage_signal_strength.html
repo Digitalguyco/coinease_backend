@@ -1,0 +1,151 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block title %}{{ title }} | {{ site_title|default:_('Django site admin') }}{% endblock %}
+
+{% block extrastyle %}
+  {{ block.super }}
+  <style>
+    .signal-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    .signal-table th, .signal-table td {
+      padding: 10px;
+      border: 1px solid #ccc;
+      text-align: left;
+    }
+    .signal-table th {
+      background-color: #f9f9f9;
+    }
+    .signal-table tr:nth-child(even) {
+      background-color: #f5f5f5;
+    }
+    .action-button {
+      display: inline-block;
+      padding: 8px 16px;
+      text-decoration: none;
+      background-color: #417690;
+      color: white;
+      border-radius: 4px;
+      margin-right: 5px;
+    }
+    .signal-strength {
+      display: flex;
+      align-items: center;
+    }
+    .signal-bar {
+      display: inline-block;
+      width: 6px;
+      margin-right: 2px;
+      background-color: #4CAF50;
+      border-radius: 1px;
+    }
+    .bar-1 { height: 6px; }
+    .bar-2 { height: 10px; }
+    .bar-3 { height: 14px; }
+    .bar-4 { height: 18px; }
+    .signal-label {
+      margin-left: 8px;
+    }
+    .no-users {
+      margin-top: 20px;
+      padding: 20px;
+      background-color: #f9f9f9;
+      border: 1px solid #ddd;
+      text-align: center;
+    }
+    .filter-form {
+      margin-top: 20px;
+      padding: 15px;
+      background-color: #f9f9f9;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+  </style>
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+  <a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
+  &rsaquo; <a href="{% url 'admin:app_list' app_label='accounts' %}">Accounts</a>
+  &rsaquo; {{ title }}
+</div>
+{% endblock %}
+
+{% block content %}
+<h1>{{ title }}</h1>
+
+{% if messages %}
+  <ul class="messagelist">
+    {% for message in messages %}
+      <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+    {% endfor %}
+  </ul>
+{% endif %}
+
+<div class="filter-form">
+  <h2>Quick Actions</h2>
+  <p>Use these buttons to perform bulk actions on user signal strength:</p>
+  
+  <form method="post" action="{% url 'admin:index' %}">
+    {% csrf_token %}
+    <!-- This form would be expanded with actual functionality in a real implementation -->
+    <button type="button" class="action-button" onclick="alert('Not implemented in this demo')">Reset All to Level 1</button>
+    <button type="button" class="action-button" onclick="alert('Not implemented in this demo')">Boost All Active Users</button>
+  </form>
+</div>
+
+{% if users %}
+  <table class="signal-table">
+    <thead>
+      <tr>
+        <th>User ID</th>
+        <th>Email</th>
+        <th>Full Name</th>
+        <th>Signal Strength</th>
+        <th>Trades Remaining</th>
+        <th>Last Updated</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for user in users %}
+        <tr>
+          <td>{{ user.id }}</td>
+          <td>{{ user.email }}</td>
+          <td>{{ user.full_name }}</td>
+          <td>
+            <div class="signal-strength">
+              {% for i in "1234" %}
+                {% if forloop.counter <= user.signal_strength %}
+                  <span class="signal-bar bar-{{ forloop.counter }}"></span>
+                {% else %}
+                  <span class="signal-bar bar-{{ forloop.counter }}" style="background-color: #ccc;"></span>
+                {% endif %}
+              {% endfor %}
+              <span class="signal-label">
+                {% if user.signal_strength == 1 %}Very Low
+                {% elif user.signal_strength == 2 %}Low
+                {% elif user.signal_strength == 3 %}Medium
+                {% elif user.signal_strength == 4 %}High
+                {% endif %}
+              </span>
+            </div>
+          </td>
+          <td>{{ user.signal_trades_remaining }}</td>
+          <td>{{ user.signal_last_updated|date:"F j, Y, H:i" }}</td>
+          <td>
+            <a href="{% url 'admin_update_user_signal' user.id %}" class="action-button">Update Signal</a>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% else %}
+  <div class="no-users">
+    <p>There are no users in the system.</p>
+  </div>
+{% endif %}
+{% endblock %} 

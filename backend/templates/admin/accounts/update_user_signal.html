@@ -1,0 +1,199 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block title %}{{ title }} | {{ site_title|default:_('Django site admin') }}{% endblock %}
+
+{% block extrastyle %}
+  {{ block.super }}
+  <style>
+    .user-details {
+      margin-top: 20px;
+      padding: 20px;
+      background-color: #f9f9f9;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      margin-bottom: 20px;
+    }
+    .detail-row {
+      margin-bottom: 10px;
+      display: flex;
+    }
+    .detail-label {
+      font-weight: bold;
+      width: 150px;
+    }
+    .detail-value {
+      flex: 1;
+    }
+    .update-form {
+      margin-top: 20px;
+      padding: 20px;
+      background-color: #f9f9f9;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    .form-control {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      max-width: 300px;
+    }
+    .signal-preview {
+      display: flex;
+      align-items: center;
+      margin-top: 10px;
+      margin-bottom: 20px;
+    }
+    .signal-bar {
+      display: inline-block;
+      width: 10px;
+      height: 20px;
+      margin-right: 5px;
+      background-color: #ccc;
+      border-radius: 2px;
+    }
+    .signal-bar.active {
+      background-color: #4CAF50;
+    }
+    .signal-label {
+      margin-left: 10px;
+      font-weight: bold;
+    }
+    .submit-button {
+      padding: 10px 20px;
+      background-color: #417690;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .back-link {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 8px 16px;
+      text-decoration: none;
+      background-color: #6c757d;
+      color: white;
+      border-radius: 4px;
+    }
+  </style>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const strengthInput = document.getElementById('signal_strength');
+      const signalBars = document.querySelectorAll('.signal-bar');
+      const signalLabel = document.querySelector('.signal-label');
+      
+      function updateSignalPreview() {
+        const strength = parseInt(strengthInput.value);
+        const labels = ['Very Low', 'Low', 'Medium', 'High'];
+        
+        signalBars.forEach((bar, index) => {
+          if (index < strength) {
+            bar.classList.add('active');
+          } else {
+            bar.classList.remove('active');
+          }
+        });
+        
+        signalLabel.textContent = labels[strength - 1];
+      }
+      
+      strengthInput.addEventListener('change', updateSignalPreview);
+      updateSignalPreview();
+    });
+  </script>
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+  <a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
+  &rsaquo; <a href="{% url 'admin:app_list' app_label='accounts' %}">Accounts</a>
+  &rsaquo; <a href="{% url 'admin_manage_signal_strength' %}">Manage Signal Strength</a>
+  &rsaquo; {{ title }}
+</div>
+{% endblock %}
+
+{% block content %}
+<h1>{{ title }}</h1>
+
+<div class="user-details">
+  <h2>User Information</h2>
+  
+  <div class="detail-row">
+    <div class="detail-label">User ID:</div>
+    <div class="detail-value">{{ user.id }}</div>
+  </div>
+  
+  <div class="detail-row">
+    <div class="detail-label">Email:</div>
+    <div class="detail-value">{{ user.email }}</div>
+  </div>
+  
+  <div class="detail-row">
+    <div class="detail-label">Full Name:</div>
+    <div class="detail-value">{{ user.full_name }}</div>
+  </div>
+  
+  <div class="detail-row">
+    <div class="detail-label">Current Signal:</div>
+    <div class="detail-value">
+      {% if user.signal_strength == 1 %}Very Low
+      {% elif user.signal_strength == 2 %}Low
+      {% elif user.signal_strength == 3 %}Medium
+      {% elif user.signal_strength == 4 %}High
+      {% endif %}
+      (Level {{ user.signal_strength }})
+    </div>
+  </div>
+  
+  <div class="detail-row">
+    <div class="detail-label">Trades Remaining:</div>
+    <div class="detail-value">{{ user.signal_trades_remaining }}</div>
+  </div>
+</div>
+
+<div class="update-form">
+  <h2>Update Signal Strength</h2>
+  
+  <form method="post">
+    {% csrf_token %}
+    
+    <div class="form-group">
+      <label for="signal_strength">Signal Strength:</label>
+      <select id="signal_strength" name="signal_strength" class="form-control">
+        <option value="1" {% if user.signal_strength == 1 %}selected{% endif %}>1 - Very Low</option>
+        <option value="2" {% if user.signal_strength == 2 %}selected{% endif %}>2 - Low</option>
+        <option value="3" {% if user.signal_strength == 3 %}selected{% endif %}>3 - Medium</option>
+        <option value="4" {% if user.signal_strength == 4 %}selected{% endif %}>4 - High</option>
+      </select>
+      
+      <div class="signal-preview">
+        <div class="signal-bar"></div>
+        <div class="signal-bar"></div>
+        <div class="signal-bar"></div>
+        <div class="signal-bar"></div>
+        <span class="signal-label">Medium</span>
+      </div>
+    </div>
+    
+    <div class="form-group">
+      <label for="signal_trades_remaining">Trades Remaining:</label>
+      <input type="number" id="signal_trades_remaining" name="signal_trades_remaining" class="form-control" value="{{ user.signal_trades_remaining }}" min="0" max="1000">
+    </div>
+    
+    <button type="submit" class="submit-button">Update Signal Strength</button>
+  </form>
+</div>
+
+<a href="{% url 'admin_manage_signal_strength' %}" class="back-link">Back to User List</a>
+{% endblock %} 
