@@ -2,13 +2,14 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
-from .models import User, SignalPlan, Transaction, SignalPurchaseHistory
+from .models import User, SignalPlan,  SignalPurchaseHistory
+from transactions.models import Transaction
 from django.core.mail import send_mail
 from django.conf import settings
 from rest_framework.permissions import IsAuthenticated
 from django.db import transaction
 from django.template.loader import render_to_string
-from django.utils.html import strip_tags
+from django.utils.html import strip_tagsß
 from django.contrib.admin.views.decorators import staff_member_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
