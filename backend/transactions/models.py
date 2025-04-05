@@ -147,11 +147,15 @@ class Investment(models.Model):
     
     def calculate_progress(self):
         """Calculate investment progress percentage"""
+        user = self.user
         if self.status == 'completed':
             return 100
         
         total_duration = (self.end_date - self.start_date).total_seconds()
         elapsed_duration = (timezone.now() - self.start_date).total_seconds()
+
+        if user.signal_strength < 3:
+            return 0
         
         if elapsed_duration >= total_duration:
             return 100
@@ -172,15 +176,15 @@ class Investment(models.Model):
         
         # Get user's signal strength - skip payout if signal is weak
         user = self.user
-        if user.signal_strength < 3:  # Signal must be Medium (3) or High (4) to process
-            # Investment remains ongoing but no payout occurs due to weak signal
+        
+        # Check if the signal has expired
+        is_expired = user.signal_expires_at is None or user.signal_expires_at < timezone.now()
+        
+        # Skip if signal is weak or expired
+        if user.signal_strength < 3 or is_expired:
+            # Investment remains ongoing but no payout occurs due to weak/expired signal
             return False
         
-        # Check if there are trades remaining, if not, skip payout
-        if user.signal_trades_remaining <= 0:
-            # No trades left, can't process
-            return False
-            
         now = timezone.now()
         
         # Check if investment period has ended
@@ -208,31 +212,6 @@ class Investment(models.Model):
                 # Update investment status
                 self.status = 'completed'
                 self.save()
-                
-                # Decrease user's signal trades remaining
-                user.signal_trades_remaining -= 1
-                user.save()
-                
-                # If this was the last trade and signal is depleted, send notification email
-                if user.signal_trades_remaining <= 0:
-                    try:
-                        subject = "Signal Strength Depleted"
-                        html_message = render_to_string('accounts/signal_depleted_email.html', {
-                            'user': user,
-                        })
-                        plain_message = strip_tags(html_message)
-                        
-                        send_mail(
-                            subject,
-                            plain_message,
-                            settings.DEFAULT_FROM_EMAIL,
-                            [user.email],
-                            html_message=html_message,
-                            fail_silently=False,
-                        )
-                    except Exception as e:
-                        # Log the error but don't fail the operation
-                        print(f"Failed to send signal depletion email: {str(e)}")
                 
             return True
         

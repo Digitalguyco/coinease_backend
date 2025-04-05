@@ -12,6 +12,8 @@ from django.template.loader import render_to_string
 from django.contrib.admin.views.decorators import staff_member_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
+from django.utils import timezone
+from django.utils.html import strip_tags
 
 
 
@@ -24,14 +26,12 @@ def register_user(request):
         username=data['email'],
         full_name=data['full_name'],
         email=data['email'],
-        wallet_network=data.get('wallet_network', ''),
-        wallet_address=data.get('wallet_address', ''),
         transaction_pin=data.get('transaction_pin', ''),
         password=data['password'],
     )
     send_mail(
         'Welcome to CoinEase',
-        f'Welcome {data["full_name"]} to CoinEase.\n\nYour account has been created successfully.\n\nYour username is {data["email"]} and your password is {data["password"]}. Your Transaction Pin is {data["transaction_pin"]}.\n\nPlease login to your account to continue.',
+        f'Welcome {data["full_name"]} to CoinEase.\n\nYour account has been created successfully.\n\nYour username is {data["email"]} and your password is {data["password"]}. Your Transaction Pin is {data.get("transaction_pin", "")}.\n\nPlease login to your account to continue.',
         settings.EMAIL_HOST_USER,
         [data['email']],
         fail_silently=False
@@ -141,12 +141,21 @@ def get_signal_strength(request):
     """Get the current user's signal strength and status"""
     user = request.user
     
+    # Check if signal has expired
+    is_expired = user.signal_expires_at is None or user.signal_expires_at < timezone.now()
+    
+    # If expired, reset to level 1
+    if is_expired and user.signal_strength > 1:
+        user.signal_strength = 1
+        user.save()
+    
     # Create response with signal information
     response = {
         'signal_strength': user.signal_strength,
-        'signal_trades_remaining': user.signal_trades_remaining,
-        'last_updated': user.signal_last_updated,
-        'can_process_trades': user.signal_strength >= 3 and user.signal_trades_remaining > 0
+        'is_active': not is_expired,
+        'expires_at': user.signal_expires_at,
+        'days_remaining': (user.signal_expires_at - timezone.now()).days if user.signal_expires_at and not is_expired else 0,
+        'can_process_trades': user.signal_strength >= 3 and not is_expired
     }
     
     return Response(response)
@@ -200,14 +209,17 @@ def purchase_signal_plan(request):
             status=status.HTTP_400_BAD_REQUEST
         )
     
+    # Calculate expiration date
+    expiration_date = timezone.now() + timezone.timedelta(days=plan.duration_days)
+    
     # Process purchase within a transaction
     with transaction.atomic():
         # Deduct from user balance
         user.balance -= plan.price
         
-        # Update signal strength and trades remaining
+        # Update signal strength and expiration date
         user.signal_strength = plan.strength_level
-        user.signal_trades_remaining += plan.trades_count
+        user.signal_expires_at = expiration_date
         user.save()
         
         # Create transaction record
@@ -217,7 +229,7 @@ def purchase_signal_plan(request):
             status='successful',
             amount=plan.price,
             currency='USD',  # Assuming USD as default, modify as needed
-            description=f"Purchase of {plan.name} signal plan"
+            description=f"Purchase of {plan.name} signal plan for {plan.duration_days} days"
         )
         
         # Record signal purchase
@@ -234,6 +246,7 @@ def purchase_signal_plan(request):
         html_message = render_to_string('accounts/signal_upgraded_email.html', {
             'user': user,
             'plan': plan,
+            'expiration_date': expiration_date,
             'site_url': settings.SITE_URL
         })
         plain_message = strip_tags(html_message)
@@ -255,18 +268,23 @@ def purchase_signal_plan(request):
         'status': 'success',
         'message': f'Successfully purchased {plan.name} signal plan',
         'signal_strength': user.signal_strength,
-        'signal_trades_remaining': user.signal_trades_remaining,
+        'expires_at': expiration_date,
+        'days_remaining': plan.duration_days,
         'transaction_id': tx.id
     })
 
 @staff_member_required
 def admin_manage_signal_strength(request):
     """Admin view to manage user signal strength"""
-    # Get all users, ordered by signal strength (low to high)
-    users = User.objects.all().order_by('signal_strength', 'signal_trades_remaining')
+    # Get all users, ordered by expiration date and signal strength
+    users = User.objects.all().order_by('signal_strength')
+    
+    # Include current time for template comparisons
+    now = timezone.now()
     
     context = {
         'users': users,
+        'now': now,
         'title': 'Manage Signal Strength'
     }
     
@@ -278,19 +296,36 @@ def admin_update_user_signal(request, user_id):
     user = get_object_or_404(User, id=user_id)
     
     if request.method == 'POST':
-        # Update user's signal strength and trades
+        # Update user's signal strength
         new_strength = int(request.POST.get('signal_strength', user.signal_strength))
-        new_trades = int(request.POST.get('signal_trades_remaining', user.signal_trades_remaining))
+        
+        # Handle expiration date
+        days_to_add = int(request.POST.get('duration_days', 0))
+        
+        if days_to_add > 0:
+            # Set or extend expiration
+            if user.signal_expires_at and user.signal_expires_at > timezone.now():
+                # Extend existing plan
+                user.signal_expires_at = user.signal_expires_at + timezone.timedelta(days=days_to_add)
+            else:
+                # Set new expiration
+                user.signal_expires_at = timezone.now() + timezone.timedelta(days=days_to_add)
         
         user.signal_strength = new_strength
-        user.signal_trades_remaining = new_trades
         user.save()
         
         messages.success(request, f"Signal strength for {user.email} updated successfully")
         return redirect('admin_manage_signal_strength')
     
+    # Calculate days remaining
+    days_remaining = 0
+    if user.signal_expires_at and user.signal_expires_at > timezone.now():
+        days_remaining = (user.signal_expires_at - timezone.now()).days
+    
     context = {
         'user': user,
+        'days_remaining': days_remaining,
+        'is_expired': user.signal_expires_at is None or user.signal_expires_at < timezone.now(),
         'title': f'Update Signal for {user.email}'
     }
     

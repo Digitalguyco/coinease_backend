@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .header {
+            background-color: #e74c3c;
+            color: white;
+            padding: 10px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .button {
+            display: inline-block;
+            background-color: #e74c3c;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 4px;
+            margin-top: 15px;
+        }
+        .details {
+            margin-bottom: 20px;
+        }
+        .footer {
+            margin-top: 30px;
+            font-size: 0.8em;
+            text-align: center;
+            color: #777;
+        }
+        .signal-bars {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        .bar {
+            width: 20px;
+            margin: 0 5px;
+            background-color: #ccc;
+            border-radius: 3px;
+        }
+        .bar-1 { height: 10px; }
+        .bar-2 { height: 15px; }
+        .bar-3 { height: 20px; }
+        .bar-4 { height: 25px; }
+        .active { background-color: #e74c3c; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>Signal Plan Expired</h2>
+        </div>
+        
+        <div class="details">
+            <p>Hello {{ user.full_name }},</p>
+            
+            <p>Your signal plan has expired, and your signal strength has been reset to the default level.</p>
+            
+            <div class="signal-bars">
+                <div class="bar bar-1 active"></div>
+                <div class="bar bar-2"></div>
+                <div class="bar bar-3"></div>
+                <div class="bar bar-4"></div>
+            </div>
+            
+            <p>With your current signal strength:</p>
+            <ul>
+                <li>Your active investments will no longer process</li>
+                <li>You won't be able to earn returns from your investments</li>
+                <li>Your investment capital remains secure but inactive</li>
+            </ul>
+            
+            <p>To continue earning profits from your investments, please renew your signal plan as soon as possible.</p>
+            
+            <a href="{{ site_url }}/dashboard/signal" class="button">Renew Signal Plan</a>
+        </div>
+        
+        <div class="footer">
+            <p>© CoinEase. All rights reserved.</p>
+            <p>This is an automated message. Please do not reply to this email.</p>
+        </div>
+    </div>
+</body>
+</html> 

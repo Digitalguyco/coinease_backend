@@ -104,12 +104,12 @@
                     </td>
                 </tr>
                 <tr>
-                    <th>Trades Added</th>
-                    <td>{{ plan.trades_count }}</td>
+                    <th>Duration</th>
+                    <td>{{ plan.duration_days }} days</td>
                 </tr>
                 <tr>
-                    <th>Total Remaining Trades</th>
-                    <td>{{ user.signal_trades_remaining }}</td>
+                    <th>Expires On</th>
+                    <td>{{ expiration_date|date:"F j, Y, H:i" }}</td>
                 </tr>
             </table>
             

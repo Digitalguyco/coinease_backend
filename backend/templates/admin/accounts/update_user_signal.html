@@ -157,8 +157,26 @@
   </div>
   
   <div class="detail-row">
-    <div class="detail-label">Trades Remaining:</div>
-    <div class="detail-value">{{ user.signal_trades_remaining }}</div>
+    <div class="detail-label">Signal Status:</div>
+    <div class="detail-value">
+      {% if is_expired %}
+        <span style="color: red;">Expired</span>
+      {% else %}
+        <span style="color: green;">Active</span>
+      {% endif %}
+    </div>
+  </div>
+  
+  <div class="detail-row">
+    <div class="detail-label">Expires At:</div>
+    <div class="detail-value">
+      {% if user.signal_expires_at %}
+        {{ user.signal_expires_at|date:"F j, Y, H:i" }}
+        ({{ days_remaining }} days remaining)
+      {% else %}
+        Not set
+      {% endif %}
+    </div>
   </div>
 </div>
 
@@ -187,8 +205,9 @@
     </div>
     
     <div class="form-group">
-      <label for="signal_trades_remaining">Trades Remaining:</label>
-      <input type="number" id="signal_trades_remaining" name="signal_trades_remaining" class="form-control" value="{{ user.signal_trades_remaining }}" min="0" max="1000">
+      <label for="duration_days">Add Duration (Days):</label>
+      <input type="number" id="duration_days" name="duration_days" class="form-control" value="0" min="0" max="365">
+      <small class="form-text text-muted">Enter the number of days to add to the current expiration date. If expired, this will set a new expiration date.</small>
     </div>
     
     <button type="submit" class="submit-button">Update Signal Strength</button>

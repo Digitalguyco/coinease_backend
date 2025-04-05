@@ -37,7 +37,7 @@ class User(AbstractUser):
         (3, 'Medium'),
         (4, 'High'),
     ], help_text="Current signal strength (1-4)")
-    signal_trades_remaining = models.IntegerField(default=0, help_text="Number of trades remaining before signal depletes")
+    signal_expires_at = models.DateTimeField(null=True, blank=True, help_text="When the current signal plan expires")
     signal_last_updated = models.DateTimeField(auto_now=True)
 
     USERNAME_FIELD = 'email'
@@ -82,11 +82,11 @@ class SignalPlan(models.Model):
         (3, 'Medium'),
         (4, 'High'),
     ])
-    trades_count = models.IntegerField(help_text="Number of trades this plan allows")
+    duration_days = models.IntegerField(help_text="Duration of the plan in days")
     is_active = models.BooleanField(default=True)
     
     def __str__(self):
-        return f"{self.name} - Level {self.strength_level} ({self.trades_count} trades)"
+        return f"{self.name} - Level {self.strength_level} ({self.duration_days} days)"
 
 # Signal Purchase History
 class SignalPurchaseHistory(models.Model):
