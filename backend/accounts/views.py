@@ -175,7 +175,7 @@ def get_signal_plans(request):
             'description': plan.description,
             'price': plan.price,
             'strength_level': plan.strength_level,
-            'trades_count': plan.trades_count
+            'duration_days': plan.duration_days
         })
     
     return Response(plans_data)
