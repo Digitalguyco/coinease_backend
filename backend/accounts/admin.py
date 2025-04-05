@@ -31,4 +31,4 @@ class SignalPurchaseHistoryAdmin(admin.ModelAdmin):
     list_display = ('user', 'plan', 'amount', 'date')
     list_filter = ('plan', 'date')
     search_fields = ('user__email', 'user__full_name')
-    raw_id_fields = ('user', 'plan', 'transaction')
+    raw_id_fields = ('user',  )

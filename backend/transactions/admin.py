@@ -42,7 +42,7 @@ class TransactionAdmin(admin.ModelAdmin):
 
 @admin.register(Deposit)
 class DepositAdmin(admin.ModelAdmin):
-    list_display = ('transaction_id', 'user', 'amount', 'currency', 'status', 'wallet_address', 'date')
+    list_display = ('transaction_id',  'amount', 'currency', 'status', 'wallet_address', 'date')
     list_filter = ('transaction__status', 'transaction__date')
     search_fields = ('transaction__user__email', 'transaction__user__full_name', 'wallet_address')
     readonly_fields = ('transaction',)
