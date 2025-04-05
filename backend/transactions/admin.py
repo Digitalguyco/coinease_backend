@@ -21,10 +21,10 @@ class InvestmentInline(admin.StackedInline):
 
 @admin.register(Transaction)
 class TransactionAdmin(admin.ModelAdmin):
-    list_display = ('id',  'type', 'amount', 'currency', 'status', 'date')
+    list_display = ('id', 'user', 'type', 'amount', 'currency', 'status', 'date')
     list_filter = ('type', 'status', 'currency', 'date')
     search_fields = ('user__email', 'user__full_name', 'description')
-    readonly_fields = ('id', 'type', 'amount', 'currency', 'date')
+    readonly_fields = ('id', 'user', 'type', 'amount', 'currency', 'date')
     inlines = [DepositInline, WithdrawalInline, InvestmentInline]
     
     def get_queryset(self, request):
@@ -42,7 +42,7 @@ class TransactionAdmin(admin.ModelAdmin):
 
 @admin.register(Deposit)
 class DepositAdmin(admin.ModelAdmin):
-    list_display = ('transaction_id',  'amount', 'currency', 'status', 'wallet_address', 'date')
+    list_display = ('transaction_id', 'user', 'amount', 'currency', 'status', 'wallet_address', 'date')
     list_filter = ('transaction__status', 'transaction__date')
     search_fields = ('transaction__user__email', 'transaction__user__full_name', 'wallet_address')
     readonly_fields = ('transaction',)
@@ -143,7 +143,7 @@ class InvestmentPlanAdmin(admin.ModelAdmin):
 
 @admin.register(Investment)
 class InvestmentAdmin(admin.ModelAdmin):
-    list_display = ( 'plan', 'amount', 'currency', 'status', 'start_date', 'end_date', 'total_returns', 'progress')
+    list_display = ('user', 'plan', 'amount', 'currency', 'status', 'start_date', 'end_date', 'total_returns', 'progress')
     list_filter = ('status', 'plan__tier', 'plan__level', 'currency')
     search_fields = ('user__email', 'user__full_name')
     readonly_fields = ('transaction', 'start_date', 'progress')

@@ -117,7 +117,7 @@ class Investment(models.Model):
         ('cancelled', 'Cancelled'),
     )
     
-    # user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='investments')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='investments')
     plan = models.ForeignKey(InvestmentPlan, on_delete=models.PROTECT, related_name='investments')
     transaction = models.OneToOneField(Transaction, on_delete=models.CASCADE, related_name='investment_details')
     amount = models.DecimalField(max_digits=15, decimal_places=2)
