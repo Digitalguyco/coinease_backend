@@ -25,7 +25,7 @@ class Transaction(models.Model):
     )
     
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='transactions')
+    # user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='transactions')
     type = models.CharField(max_length=20, choices=TRANSACTION_TYPES)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     amount = models.DecimalField(max_digits=18, decimal_places=8)
@@ -117,7 +117,7 @@ class Investment(models.Model):
         ('cancelled', 'Cancelled'),
     )
     
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='investments')
+    # user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='investments')
     plan = models.ForeignKey(InvestmentPlan, on_delete=models.PROTECT, related_name='investments')
     transaction = models.OneToOneField(Transaction, on_delete=models.CASCADE, related_name='investment_details')
     amount = models.DecimalField(max_digits=15, decimal_places=2)
