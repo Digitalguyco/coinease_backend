@@ -90,7 +90,7 @@ class SignalPlan(models.Model):
 
 # Signal Purchase History
 class SignalPurchaseHistory(models.Model):
-    # user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='signal_purchases')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='signal_purchases')
     # plan = models.ForeignKey(SignalPlan, on_delete=models.SET_NULL, null=True)
     amount = models.DecimalField(max_digits=18, decimal_places=8)
     # transaction = models.ForeignKey('transactions.Transaction', on_delete=models.SET_NULL, null=True, blank=True)
